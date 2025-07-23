@@ -89,8 +89,6 @@ export const AudienceTableSection = (): JSX.Element => {
   const [importOption, setImportOption] = useState<'phonebook' | 'file' | null>(null);
   const [selectedPhonebook, setSelectedPhonebook] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [listName, setListName] = useState<string>('');
-  const [listNameError, setListNameError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   
@@ -231,8 +229,6 @@ export const AudienceTableSection = (): JSX.Element => {
     setImportOption(null);
     setSelectedPhonebook('');
     setSelectedFile(null);
-    setListName('');
-    setListNameError('');
     setIsLoading(false);
     setIsDragOver(false);
     setShowErrorModal(false);
@@ -240,7 +236,6 @@ export const AudienceTableSection = (): JSX.Element => {
 
   const clearSelectedFile = () => {
     setSelectedFile(null);
-    setListNameError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -262,22 +257,7 @@ export const AudienceTableSection = (): JSX.Element => {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       setSelectedFile(files[0]);
-      // Validate list name when file is dropped
-      if (!listName.trim()) {
-        setListNameError('Please enter a list name');
-      }
     }
-  };
-
-  const handleListNameChange = (value: string) => {
-    setListName(value);
-    // Clear error when user starts typing
-    if (listNameError && value.trim()) {
-      setListNameError('');
-    }
-    // Validate in real-time
-    const error = validateListName(value);
-    setListNameError(error);
   };
 
   const downloadSampleFile = () => {
@@ -489,7 +469,7 @@ export const AudienceTableSection = (): JSX.Element => {
           setIsLoading(false);
           
           // Capture list name before resetting state
-          const currentListName = listName;
+          const currentListName = 'Imported Contacts';
           
           setAudienceData(prev => [...prev, ...valid]);
           
@@ -521,12 +501,7 @@ export const AudienceTableSection = (): JSX.Element => {
     if (!file) return;
     
     setSelectedFile(file);
-    
-    // Validate list name when file is selected
-    if (!listName.trim()) {
-      setListNameError('Please enter a list name');
-    }
-  }, [listName]);
+  }, []);
 
   const handlePhonebookImport = async () => {
     if (!selectedPhonebook) {
@@ -566,7 +541,7 @@ export const AudienceTableSection = (): JSX.Element => {
         ? ` (${importSummary.duplicatesRemoved} duplicates removed)` 
         : '';
       setAudienceData(prev => [...prev, ...validRows]);
-      toast.success(`Successfully imported ${validRows.length} contacts to "${listName}"${duplicateMessage}`);
+      toast.success(`Successfully imported ${validRows.length} contacts${duplicateMessage}`);
     }
     setShowErrorModal(false);
     setShowImportModal(false);
@@ -578,14 +553,6 @@ export const AudienceTableSection = (): JSX.Element => {
   };
 
   const handleFileImport = () => {
-    // Validate list name first
-    const nameError = validateListName(listName);
-    if (nameError) {
-      setListNameError(nameError);
-      toast.error(nameError);
-      return;
-    }
-    
     if (!selectedFile) {
       toast.error('Please select a file');
       return;
@@ -596,7 +563,7 @@ export const AudienceTableSection = (): JSX.Element => {
   };
 
   const canProceedWithFileUpload = () => {
-    return listName.trim() !== '' && selectedFile !== null && !listNameError;
+    return selectedFile !== null;
   };
 
   const handleCallIdClick = (callId: string) => {
@@ -694,24 +661,6 @@ export const AudienceTableSection = (): JSX.Element => {
                     {/* File Upload Section */}
                     {importOption === 'file' && (
                       <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            List Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={listName}
-                            onChange={(e) => handleListNameChange(e.target.value)}
-                            placeholder="Enter a name for this contact list"
-                            className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              listNameError ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                            }`}
-                          />
-                          {listNameError && (
-                            <p className="mt-1 text-sm text-red-600">{listNameError}</p>
-                          )}
-                        </div>
-
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Upload File <span className="text-red-500">*</span>
