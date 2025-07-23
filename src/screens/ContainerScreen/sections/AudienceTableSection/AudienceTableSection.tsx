@@ -653,49 +653,24 @@ export const AudienceTableSection = (): JSX.Element => {
                 </DialogHeader>
                 
                 <div className="mt-4">
+                  {/* Import Option Selection */}
                   <div className="space-y-4">
-                    {/* Import Method Selection */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Choose Import Method
                       </label>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div
-                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                            importOption === 'phonebook'
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => setImportOption('phonebook')}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-blue-600" />
-                            <div>
-                              <h3 className="font-medium text-gray-900">From Phonebook</h3>
-                              <p className="text-sm text-gray-500">Import from existing lists</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                            importOption === 'file'
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => setImportOption('file')}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Upload className="h-5 w-5 text-blue-600" />
-                            <div>
-                              <h3 className="font-medium text-gray-900">Upload File</h3>
-                              <p className="text-sm text-gray-500">CSV or Excel file</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <Select value={importOption || ''} onValueChange={(value) => setImportOption(value as 'phonebook' | 'file')}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select how you want to import contacts" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="phonebook">Import List from Phonebook</SelectItem>
+                          <SelectItem value="file">Upload file</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {/* Phonebook Selection */}
+                    {/* Phonebook Import Section */}
                     {importOption === 'phonebook' && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -719,7 +694,6 @@ export const AudienceTableSection = (): JSX.Element => {
                     {/* File Upload Section */}
                     {importOption === 'file' && (
                       <div className="space-y-4">
-                        {/* List Name Input */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             List Name <span className="text-red-500">*</span>
@@ -729,8 +703,8 @@ export const AudienceTableSection = (): JSX.Element => {
                             value={listName}
                             onChange={(e) => handleListNameChange(e.target.value)}
                             placeholder="Enter a name for this contact list"
-                            className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                              listNameError ? 'border-red-300' : 'border-gray-300'
+                            className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              listNameError ? 'border-red-300 bg-red-50' : 'border-gray-300'
                             }`}
                           />
                           {listNameError && (
@@ -738,96 +712,86 @@ export const AudienceTableSection = (): JSX.Element => {
                           )}
                         </div>
 
-                        {/* Sample File Download */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
-                            <div className="flex-1">
-                              <h4 className="text-sm font-medium text-blue-900 mb-1">
-                                Need a template?
-                              </h4>
-                              <p className="text-sm text-blue-700 mb-3">
-                                Download our sample file to see the correct format. Your file should have exactly two columns: "Name" and "Phone number".
-                              </p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={downloadSampleFile}
-                                className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                              >
-                                <Download className="h-4 w-4 mr-2" />
-                                Download Sample File
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* File Upload Area */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Upload File <span className="text-red-500">*</span>
                           </label>
                           
-                          {!selectedFile ? (
-                            <div
-                              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                                isDragOver
-                                  ? 'border-blue-400 bg-blue-50'
-                                  : 'border-gray-300 hover:border-gray-400'
-                              }`}
-                              onDragOver={handleDragOver}
-                              onDragLeave={handleDragLeave}
-                              onDrop={handleDrop}
-                            >
-                              <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          {/* File Upload Area */}
+                          <div
+                            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                              isDragOver
+                                ? 'border-blue-400 bg-blue-50'
+                                : selectedFile
+                                ? 'border-green-400 bg-green-50'
+                                : 'border-gray-300 hover:border-gray-400'
+                            }`}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                          >
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept=".csv,.xlsx,.xls"
+                              onChange={handleFileUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            
+                            {selectedFile ? (
                               <div className="space-y-2">
-                                <p className="text-sm font-medium text-gray-900">
-                                  Drop your file here, or{' '}
-                                  <button
+                                <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto" />
+                                <div className="flex items-center justify-center gap-2">
+                                  <FileText className="h-4 w-4 text-green-600" />
+                                  <span className="text-sm font-medium text-green-700">
+                                    {selectedFile.name}
+                                  </span>
+                                  <Button
                                     type="button"
-                                    className="text-blue-600 hover:text-blue-700 underline"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearSelectedFile}
+                                    className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
                                   >
-                                    browse
-                                  </button>
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  Supports CSV and Excel files (max 10MB)
-                                </p>
-                              </div>
-                              <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".csv,.xlsx,.xls"
-                                onChange={handleFileUpload}
-                                className="hidden"
-                              />
-                            </div>
-                          ) : (
-                            <div className="border border-gray-300 rounded-lg p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <FileText className="h-8 w-8 text-blue-600" />
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {selectedFile.name}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {(selectedFile.size / 1024).toFixed(1)} KB
-                                    </p>
-                                  </div>
+                                    <X className="h-3 w-3" />
+                                  </Button>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={clearSelectedFile}
-                                  className="text-gray-500 hover:text-gray-700"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
+                                <p className="text-xs text-green-600">
+                                  File ready for upload
+                                </p>
                               </div>
-                            </div>
-                          )}
+                            ) : (
+                              <div className="space-y-2">
+                                <Upload className="h-8 w-8 text-gray-400 mx-auto" />
+                                <div className="text-sm">
+                                  <span className="font-medium text-gray-700">
+                                    Click to upload
+                                  </span>
+                                  <span className="text-gray-500"> or drag and drop</span>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                  CSV or Excel files only (max 10MB)
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Sample File Download */}
+                          <div className="mt-3 flex items-center justify-between text-xs">
+                            <span className="text-gray-500">
+                              Need help? Download our sample file format
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={downloadSampleFile}
+                              className="h-6 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              Sample CSV
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -845,7 +809,7 @@ export const AudienceTableSection = (): JSX.Element => {
                       Cancel
                     </Button>
                     
-                    {importOption === 'phonebook' ? (
+                    {importOption === 'phonebook' && (
                       <Button 
                         onClick={handlePhonebookImport}
                         disabled={!selectedPhonebook || isLoading}
@@ -860,7 +824,9 @@ export const AudienceTableSection = (): JSX.Element => {
                           'Import'
                         )}
                       </Button>
-                    ) : importOption === 'file' ? (
+                    )}
+
+                    {importOption === 'file' && (
                       <Button 
                         onClick={handleFileImport}
                         disabled={!canProceedWithFileUpload() || isLoading}
@@ -872,15 +838,8 @@ export const AudienceTableSection = (): JSX.Element => {
                             Processing...
                           </>
                         ) : (
-                          'Import'
+                          'Upload & Import'
                         )}
-                      </Button>
-                    ) : (
-                      <Button 
-                        disabled
-                        className="bg-gray-300 cursor-not-allowed"
-                      >
-                        Select Import Method
                       </Button>
                     )}
                   </div>
